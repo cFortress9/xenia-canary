@@ -10,7 +10,6 @@
 #include "xenia/apu/xma_decoder.h"
 
 #include "xenia/apu/xma_context.h"
-#include "xenia/apu/xma_context_fake.h"
 #include "xenia/apu/xma_context_master.h"
 #include "xenia/apu/xma_context_new.h"
 #include "xenia/apu/xma_context_old.h"
@@ -62,10 +61,9 @@ DEFINE_bool(use_dedicated_xma_thread, true,
             "APU");
 
 DEFINE_string(
-    xma_decoder, "new",
+    xma_decoder, "master",
     "Decoder version used to process XMA audio.\n"
-    "Use: [fake, master, old, new]\n"
-    " fake: \n  No audio will be decoded.\n"
+    "Use: [master, old, new]\n"
     " master: \n  Version of decoder exactly like on base version of Xenia.\n"
     " old: \n  Decoder based on master version of decoder with few "
     "improvements.\n"
@@ -150,16 +148,14 @@ X_STATUS XmaDecoder::Setup(kernel::KernelState* kernel_state) {
 
   // Setup XMA contexts.
   for (int i = 0; i < kContextCount; ++i) {
-    if (cvars::xma_decoder == "fake") {
-      contexts_[i] = new XmaContextFake();
-    } else if (cvars::xma_decoder == "master") {
+    if (cvars::xma_decoder == "master") {
       contexts_[i] = new XmaContextMaster();
     } else if (cvars::xma_decoder == "old") {
       contexts_[i] = new XmaContextOld();
     } else if (cvars::xma_decoder == "new") {
       contexts_[i] = new XmaContextNew();
     } else {
-      contexts_[i] = new XmaContextNew();
+      contexts_[i] = new XmaContextMaster();
     }
 
     uint32_t guest_ptr = context_data_first_ptr_ + i * sizeof(XMA_CONTEXT_DATA);
